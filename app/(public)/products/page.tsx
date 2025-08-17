@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { Container, Stack, Typography, Button, TextField, Card, CardContent } from '@mui/material';
-
 import Products, { Product } from "@/components/Products";
 
 const items: Product[] = [
@@ -113,9 +112,7 @@ const items: Product[] = [
     shipping: "Livraison 72h",
   },
 ]
-
 export default function Page() {
-  
   return (
     <Container>
       <Products items={items} currency="EUR" locale="fr-FR" onAddToCart={(p) => console.log("ADD", p)} />

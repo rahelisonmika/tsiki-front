@@ -13,7 +13,7 @@ export default function Header() {
     <AppBar position="sticky" elevation={0}>
       <Toolbar sx={{ gap: 2 }}>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Next.js + MUI Starter
+          Tsiki
         </Typography>
         <Box>
           <IconButton color="inherit" onClick={toggle} aria-label="toggle color mode">

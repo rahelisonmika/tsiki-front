@@ -5,7 +5,7 @@ export const getTheme = (mode: 'light' | 'dark' = 'light') =>
   createTheme({
     palette: {
       mode,
-      primary: { main: '#1976d2' },
+      primary: { main: '#7c0dc1ff', contrastText: '#fff' },
       secondary: { main: '#9c27b0' },
     },
     typography: { fontFamily: ['Roboto', 'sans-serif'].join(',') },
