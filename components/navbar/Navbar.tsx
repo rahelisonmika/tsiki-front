@@ -1,13 +1,16 @@
 'use client';
 
 import * as React from 'react';
+import { useState } from "react";
 import Link from 'next/link';
-import { useSearchParams,useRouter, usePathname } from 'next/navigation';
+import { useSearchParams,useRouter } from 'next/navigation';
 import {
   AppBar, Toolbar, Container, Box, Typography, IconButton, InputBase,
   Badge, Select, MenuItem, FormControl, OutlinedInput, Button, Menu,
-  Drawer, List, ListItemButton, ListItemText, Divider, Stack
+  Drawer, List, ListItemButton, ListItemText, Divider, Stack, ListItemIcon
 } from '@mui/material';
+
+import LogoutIcon from "@mui/icons-material/Logout";
 import { alpha, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import SearchIcon from '@mui/icons-material/Search';
@@ -34,6 +37,8 @@ export default function Navbar({CATEGORIES, urlToRedirect, urlLogin, urlCart}:Na
   const cartCount = useCart((state) => state.items.length);
   const user      = useUser((state) => state.user);
 
+  const clearCart = useCart((state) => state.clearCart);
+  const userLogout= useUser((state) => state.logout);
 
   const theme    = useTheme();
   const isMdUp   = useMediaQuery(theme.breakpoints.up('md'));
@@ -105,6 +110,32 @@ export default function Navbar({CATEGORIES, urlToRedirect, urlLogin, urlCart}:Na
     return activeRoute;
   };
   // --------------------------------------------------
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout  = async () => {
+    // TODO: appel API /api/auth/logout
+    // await fetch('/api/auth/logout', { method: 'POST' })
+    
+    const res = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    clearCart();
+    userLogout();
+
+    handleClose();
+  };
 
   return (
     <AppBar
@@ -235,6 +266,47 @@ export default function Navbar({CATEGORIES, urlToRedirect, urlLogin, urlCart}:Na
               <IconButton sx={{display:handleDisplayCompte}} aria-label="compte" color="inherit" component={Link} href={urlLogin || '/login'}>
                 <PersonOutlineIcon />
               </IconButton>
+
+              <IconButton
+                aria-label="compte"
+                sx={{display:(handleDisplayCompte() === "none" ? "flex" : "none")}}
+                color="inherit"
+                onClick={handleOpen}
+              >
+                <PersonOutlineIcon />
+              </IconButton>
+
+              {/* Menu dropdown */}
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                onClick={handleClose}
+                PaperProps={{
+                  elevation: 2,
+                  sx: { minWidth: 180 },
+                }}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                {/* Profil */}
+                <MenuItem component={Link} href="/profile">
+                  <ListItemIcon>
+                    <PersonOutlineIcon fontSize="small" />
+                  </ListItemIcon>
+                  <Typography variant="inherit">Mon profil</Typography>
+                </MenuItem>
+
+                <Divider />
+
+                {/* Logout */}
+                <MenuItem onClick={handleLogout}>
+                  <ListItemIcon>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  <Typography variant="inherit">Se déconnecter</Typography>
+                </MenuItem>
+              </Menu>
 
               {/* Panier */}
               <IconButton aria-label="panier" color="inherit" component={Link} href={urlCart || '/cart'}>
