@@ -16,41 +16,10 @@ import {
   Select,
   MenuItem
 } from "@mui/material";
-import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartOutlined";
 import { useRouter } from 'next/navigation';
-
-/**
- * Type d'un produit minimaliste pour l'affichage.
- */
-export type Product = {
-  id: string;
-  title: string;
-  brand: string;
-  image: string; // URL
-  price: number;
-  oldPrice?: number;
-  rating: number; // 0..5
-  reviews: number;
-  inStock: boolean;
-  description: string;
-  tags: string[];
-  shipping?: string;
-};
-
-export type ProductsProps = {
-  /** Liste de produits à afficher */
-  items: Product[];
-  /** Callback quand on clique une carte produit (optionnel) */
-  //onSelect?: (product: Product) => void;
-  /** Callback ajout panier (optionnel) */
-  onAddToCart?: (product: Product) => void;
-  /** Localisation/monnaie pour l'affichage du prix */
-  locale?: string; // ex: "fr-FR"
-  currency?: string; // ex: "EUR", "MGA"
-  /** Tri par prix (asc|desc), défaut: asc */
-  sortByPrice?: "asc" | "desc";
-  urlProduct?: string; // URL de la page produit, par défaut "products"
-};
+import { Product } from '@/types/product';
+import { ProductsProps } from './Products.type';
+import AddToCartButton from '@/components/addToCartButton/AddToCartButton'
 
 const clamp2Lines = {
   overflow: "hidden",
@@ -79,7 +48,6 @@ export default function Products({
   items,
   //onSelect,
   urlProduct = "products",
-  onAddToCart,
   locale = "fr-FR",
   currency = "EUR",
   sortByPrice = "asc",
@@ -230,7 +198,7 @@ export default function Products({
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
                     <Box sx={{ display: "flex", gap: 1, flexGrow: 1 }}>
                       {/* Bouton mobile (contained) */}
-                      <Button
+                      {/* <Button
                         size="small"
                         variant="contained"
                         disableElevation
@@ -246,18 +214,24 @@ export default function Products({
                           px: 1.5,
                           minWidth: 0,
                           display: { xs: "inline-flex", sm: "none" },
-                          bgcolor: "#7C3AED",
-                          color: "#fff",
-                          "&:hover": { bgcolor: "#6D28D9" },
+                          bgcolor: "brandButtonPrimary.main",
+                          color: "brandButtonPrimary.light",
+                          "&:hover": { bgcolor: "brandButtonPrimary.dark" },
                           "&.Mui-disabled": { bgcolor: "action.disabledBackground", color: "action.disabled" },
                         }}
                       >
                         Ajouter
-                      </Button>
+                      </Button> */}
 
                       {/* Bouton desktop (outlined + icône) */}
-
-                      <Button
+                      <Box onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}>
+                          <AddToCartButton product={p} typeButton="basic"/>
+                      </Box>
+                        
+                      {/* <Button
                         size="small"
                         variant="outlined"
                         startIcon={<AddShoppingCartOutlinedIcon />}
@@ -271,14 +245,14 @@ export default function Products({
                         sx={{
                           borderRadius: 2,
                           display: { xs: "none", sm: "inline-flex" },
-                          bgcolor: "#7C3AED",
-                          color: "#fff",
-                          "&:hover": { bgcolor: "#6D28D9" },
+                          bgcolor: "brandButtonPrimary.main",
+                          color: "brandButtonPrimary.light",
+                          "&:hover": { bgcolor: "brandButtonPrimary.dark" },
                           "&.Mui-disabled": { bgcolor: "action.disabledBackground", color: "action.disabled" },
                         }}
                       >
                         Ajouter
-                      </Button>
+                      </Button> */}
                     </Box>
 
                     {/* Statut stock (toujours visible) */}

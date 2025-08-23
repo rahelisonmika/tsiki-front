@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import EmotionCacheProvider from '@/providers/EmotionCacheProvider';
 import ColorModeProvider from '@/providers/ColorModeProvider';
-import Header from '@/components/Header';
 import { Roboto } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import {Category} from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import Navbar from '@/components/navbar/Navbar';
+import {Category} from '@/components/navbar/Navbar';
+import Footer from '@/components/footer/Footer';
 
 const roboto = Roboto({ subsets: ['latin'], weight: ['300','400','500','700'] });
 
@@ -28,6 +27,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+
   return (
     <html lang="fr" className={roboto.className}>
       <body>

@@ -30,12 +30,8 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import LanguageIcon from '@mui/icons-material/Language';
-
-export type FooterCategory = { cat_code: string; cat_libelle: string };
-
-type FooterProps = {
-  categories?: FooterCategory[];
-};
+import { usePathname } from 'next/navigation';
+import { FooterCategory, FooterProps } from './Footer.type';
 
 const DEFAULT_CATEGORIES: FooterCategory[] = [
   { cat_code: 'electronique', cat_libelle: 'Électronique' },
@@ -48,7 +44,7 @@ const DEFAULT_CATEGORIES: FooterCategory[] = [
   { cat_code: 'livres',       cat_libelle: 'Livres' },
 ];
 
-export default function Footer({ categories = DEFAULT_CATEGORIES }: FooterProps) {
+export default function Footer({ categories = DEFAULT_CATEGORIES, loginUrl, registerUrl }: FooterProps) {
   const [email, setEmail] = React.useState('');
   const [locale, setLocale] = React.useState<'fr' | 'en' | 'mg'>('fr');
   const [currency, setCurrency] = React.useState<'USD' | 'EUR' | 'MGA'>('USD');
@@ -74,8 +70,9 @@ export default function Footer({ categories = DEFAULT_CATEGORIES }: FooterProps)
 
   const year = new Date().getFullYear();
 
-  return (
-    <Box component="footer" sx={{ mt: 6, bgcolor: (t) => (t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900]),}}>
+  const pathname = usePathname();
+
+  if((pathname === (loginUrl || '/login')) || (pathname === (loginUrl || '/register')) ) return (<Box></Box>); return (<Box component="footer" sx={{ mt: 6, bgcolor: (t) => (t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900]),}}>
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Grid container spacing={4}>
           {/* Col 1 — Marque, contact, réseaux, newsletter, langue/devise */}
@@ -296,6 +293,6 @@ export default function Footer({ categories = DEFAULT_CATEGORIES }: FooterProps)
           {snack.msg}
         </Alert>
       </Snackbar>
-    </Box>
-  );
+    </Box>)
+    
 }

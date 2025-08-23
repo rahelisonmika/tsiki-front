@@ -10,12 +10,7 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-
-type FormState = {
-  email: string;
-  password: string;
-  remember: boolean;
-};
+import { useUser } from '@/store/user/user';
 
 const validateEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -54,6 +49,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const eMap = validate(values);
     if (Object.keys(eMap).length) {
       setErrors(eMap);
@@ -64,25 +60,60 @@ export default function LoginPage() {
     try {
       setSubmitting(true);
 
-      // TODO: appelle ton API d’authentification ici (credentials)
-      // const res = await fetch('/api/login', { method: 'POST', body: JSON.stringify(values) })
-      // if (!res.ok) throw new Error('Bad credentials')
+      const payloadForPost = {
+        email: values.email,
+        password: values.password
+      };
 
-      // Simule une latence/OK
-      await new Promise((r) => setTimeout(r, 700));
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadForPost),
+      });
 
-      setSnack({ open: true, message: 'Connexion réussie ✅', severity: 'success' });
+      const payload = await res.json().catch(() => ({}));
 
-      // Exemple: stocker un flag si "se souvenir de moi"
-      if (values.remember) {
-        try { localStorage.setItem('remember', '1'); } catch {}
-      } else {
-        try { localStorage.removeItem('remember'); } catch {}
+      if (!res.ok) {
+        // cas ZodError côté API
+        if (res.status === 400 && Array.isArray(payload?.error)) {
+          setSnack({ open: true, message: 'Champs invalides (validation serveur).', severity: 'error' });
+        } else if (res.status === 401) {
+          setSnack({ open: true, message: 'Email ou mot de passe incorrect.', severity: 'error' });
+        } else {
+          console.log(payload);
+          setSnack({ open: true, message: payload?.error ?? 'Erreur serveur.', severity: 'error' });
+        }
+        return; // stop ici en cas d’erreur
       }
 
-      setTimeout(() => router.push(redirect), 400);
-    } catch {
-      setSnack({ open: true, message: 'Email ou mot de passe incorrect.', severity: 'error' });
+      console.log("payload ",payload);
+      //const token = (await cookies()).get('auth')?.value;
+
+      //console.log("token ",token);
+      const resToken = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include", // 🔑 IMPORTANT pour envoyer le cookie
+      });
+
+      const dataViaToken = await resToken.json();
+
+      console.log("dataViaToken ",dataViaToken);
+
+      useUser.getState().login({ user: dataViaToken });
+
+      // Succès
+      setSnack({ open: true, message: 'Connexion réussie ✅', severity: 'success' });
+
+      // Se souvenir de moi
+      try {
+        if (values.remember) localStorage.setItem('remember', '1');
+        else localStorage.removeItem('remember');
+      } catch {}
+
+      const to = redirect ?? '/'; // fallback si redirect non défini
+      setTimeout(() => router.push(to), 400);
+    } catch (err) {
+      setSnack({ open: true, message: 'Impossible de se connecter. Vérifiez votre réseau.', severity: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -108,7 +139,7 @@ export default function LoginPage() {
 
         <Box component="form" noValidate onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            <Grid >
+            <Grid sx={{width: '95%'}}>
               <TextField
                 type="email"
                 label="Email"
@@ -122,7 +153,7 @@ export default function LoginPage() {
               />
             </Grid>
 
-            <Grid>
+            <Grid sx={{width: '95%'}}>
               <TextField
                 type={showPwd ? 'text' : 'password'}
                 label="Mot de passe"
@@ -164,16 +195,19 @@ export default function LoginPage() {
             </Grid>
           </Grid>
 
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-            disabled={submitting}
-          >
-            {submitting ? 'Connexion…' : 'Se connecter'}
-          </Button>
+          <Grid  sx={{width: '95%'}}>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              fullWidth
+              sx={{ mt: 2 }}
+              disabled={submitting}
+            >
+              {submitting ? 'Connexion…' : 'Se connecter'}
+            </Button>
+
+          </Grid>
 
           <Divider sx={{ my: 3 }} />
 

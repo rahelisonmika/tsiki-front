@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
 import {
   Box, Container, Grid, Card, CardContent, CardActions, Paper,
   Typography, Stack, IconButton, Button, Divider, TextField, InputAdornment,
@@ -12,145 +13,12 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
+import {Product} from '@/types/product';
+import {Coupon} from '@/types/cart'
+import {CartItem} from '@/types/cart'
+import { useCart } from '@/store/cart/cart';
+import { get } from 'http';
 
-/* ---------------- Demo products (ta liste) ---------------- */
-type Product = {
-  id: string;
-  title: string;
-  brand: string;
-  image: string;
-  price: number;
-  oldPrice?: number;
-  rating: number;
-  reviews: number;
-  inStock: boolean;
-  description: string;
-  tags: string[];
-  shipping?: string;
-};
-
-const DEMO_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    title: "Casque Bluetooth Noir",
-    brand: "Aurafy",
-    image: "https://images.unsplash.com/photo-1679533662345-b321cf2d8792?q=80&w=667&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 59.9,
-    oldPrice: 89.9,
-    rating: 4.4,
-    reviews: 326,
-    inStock: true,
-    description: "Casque sans fil, réduction de bruit passive, 30h d’autonomie.",
-    tags: ["Audio", "Sans fil", "Lifestyle"],
-    shipping: "Livraison 24-48h",
-  },
-  {
-    id: "2",
-    title: "Montre Connectée Série S",
-    brand: "Pulse",
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop",
-    price: 129.0,
-    rating: 4.2,
-    reviews: 198,
-    inStock: true,
-    description: "Suivi santé, GPS, étanche 5 ATM, 7 jours d’autonomie.",
-    tags: ["Wearable", "Fitness"],
-    shipping: "Livraison 48h",
-  },
-  {
-    id: "3",
-    title: "Appareil Photo Mirrorless",
-    brand: "Lumina",
-    image: "https://images.unsplash.com/photo-1606986601547-a4d886b671b2?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 699.0,
-    oldPrice: 799.0,
-    rating: 4.7,
-    reviews: 742,
-    inStock: true,
-    description: "Capteur APS-C 24MP, 4K30, écran orientable, Wi-Fi.",
-    tags: ["Photo", "4K"],
-    shipping: "Livraison gratuite",
-  },
-  {
-    id: "4",
-    title: "Chaussures Running Pro",
-    brand: "SwiftRun",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop",
-    price: 89.0,
-    rating: 4.1,
-    reviews: 140,
-    inStock: false,
-    description: "Amorti réactif, mesh respirant, semelle anti-dérapante.",
-    tags: ["Sport"],
-    shipping: "—",
-  },
-  {
-    id: "5",
-    title: "Sac à Dos Urbain 24L",
-    brand: "Carry",
-    image: "https://images.unsplash.com/photo-1528921581519-52b9d779df2b?q=80&w=988&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 49.0,
-    rating: 4.0,
-    reviews: 88,
-    inStock: true,
-    description: "Compartiment laptop 16”, anti-pluie, poches rapides.",
-    tags: ["Lifestyle", "Voyage"],
-    shipping: "Livraison 72h",
-  },
-  {
-    id: "6",
-    title: "Lampe de Bureau LED",
-    brand: "Glow",
-    image: "https://images.unsplash.com/photo-1675320458457-fe4576cbd0f8?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 24.9,
-    rating: 4.3,
-    reviews: 310,
-    inStock: true,
-    description: "Température réglable, USB-C, faible consommation.",
-    tags: ["Maison"],
-    shipping: "Livraison 48h",
-  },
-  {
-    id: "7",
-    title: "Clavier Mécanique 75%",
-    brand: "KeyLabs",
-    image: "https://images.unsplash.com/photo-1648392368628-6e984d89e2f3?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 109.0,
-    rating: 4.6,
-    reviews: 512,
-    inStock: true,
-    description: "Switches tactiles, RGB, hot-swap, Bluetooth/USB.",
-    tags: ["Informatique", "Gaming", "Bureau"],
-    shipping: "Livraison 24-48h",
-  },
-  {
-    id: "8",
-    title: "Gourde Isotherme 1L",
-    brand: "TrailGo",
-    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1200&auto=format&fit=crop",
-    price: 19.9,
-    rating: 4.5,
-    reviews: 267,
-    inStock: true,
-    description: "Acier inoxydable, conserve 24h froid / 12h chaud.",
-    tags: ["Outdoor"],
-    shipping: "Livraison 72h",
-  },
-];
-
-/* ---------------- Cart logic ---------------- */
-type CartItem = {
-  id: string;
-  title: string;
-  price: number;
-  image?: string;
-  qty: number;
-  maxQty?: number;
-};
-
-type Coupon = { code: string; percentOff: number };
-
-const LS_KEY = 'tsiki-cart';
 const DEMO_COUPONS: Coupon[] = [{ code: 'WELCOME10', percentOff: 10 }];
 
 function formatPrice(n: number, currency = 'EUR', locale = 'fr-FR') {
@@ -164,7 +32,9 @@ function formatPrice(n: number, currency = 'EUR', locale = 'fr-FR') {
 function loadCart(): CartItem[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = JSON.stringify(useCart((state) => state.get));
+
+    //const raw = localStorage.getItem(LS_KEY);
     return raw ? (JSON.parse(raw) as CartItem[]) : [];
   } catch {
     return [];
@@ -173,19 +43,27 @@ function loadCart(): CartItem[] {
 
 function saveCart(items: CartItem[]) {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify(items));
+    const setItems =  useCart((state) => state.set);
+    setItems(items);
+    //localStorage.setItem(LS_KEY, JSON.stringify(items));
   } catch {}
 }
 
 // Helper: transforme un Product en CartItem
-function productToCartItem(p: Product, qty = 1): CartItem {
-  return { id: p.id, title: p.title, price: p.price, image: p.image, qty, maxQty: 10 };
-}
+// function productToCartItem(p: Product, qty = 1): CartItem {
+//   return { id: p.id, title: p.title, price: p.price, image: p.image, qty, maxQty: 10 };
+// }
 
 export default function CartPage() {
+  const DEMO_PRODUCTS = (useCart((state) => state.items))?(useCart((state) => state.items)):[];
+  const clearCart     = useCart((state) => state.clearCart)
+
   const router = useRouter();
 
-  const [items, setItems] = React.useState<CartItem[]>([]);
+  //const [items, setItems] = React.useState<CartItem[]>([]);
+  const setItems =  useCart((state) => state.set);
+  const items    =  useCart((state) => state.items);
+
   const [couponInput, setCouponInput] = React.useState('');
   const [appliedCoupon, setAppliedCoupon] = React.useState<Coupon | null>(null);
   const [snack, setSnack] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -197,18 +75,18 @@ export default function CartPage() {
     const initial = loadCart();
 
     // 2) S'il est vide, on pré-remplit avec 3 produits démo (id 1, 2, 7)
-    if (!initial.length) {
-      const seed = [
-        productToCartItem(DEMO_PRODUCTS.find(p => p.id === '1')!, 1),
-        productToCartItem(DEMO_PRODUCTS.find(p => p.id === '2')!, 2), // exemple: qty 2
-        productToCartItem(DEMO_PRODUCTS.find(p => p.id === '7')!, 1),
-      ].filter(Boolean) as CartItem[];
+    //if (!initial.length) {
+      // const seed = [
+      //   productToCartItem(DEMO_PRODUCTS.find(p => p.id === '1')!, 1),
+      //   productToCartItem(DEMO_PRODUCTS.find(p => p.id === '2')!, 2), // exemple: qty 2
+      //   productToCartItem(DEMO_PRODUCTS.find(p => p.id === '7')!, 1),
+      // ].filter(Boolean) as CartItem[];
 
-      setItems(seed);
-      saveCart(seed); // persiste tout de suite
-    } else {
-      setItems(initial);
-    }
+      //setItems(DEMO_PRODUCTS);
+      //saveCart(DEMO_PRODUCTS); // persiste tout de suite
+    //} else {
+      //setItems(initial);
+    //}
   }, []);
 
   // 3) Persister à chaque modification
@@ -220,24 +98,32 @@ export default function CartPage() {
   const discount = appliedCoupon ? (subtotal * appliedCoupon.percentOff) / 100 : 0;
   const total = Math.max(0, subtotal - discount);
 
-  const inc = (id: string) =>
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, qty: Math.min((it.maxQty ?? 99), it.qty + 1) } : it
-      )
+  const inc = (id: string) =>{
+    const current = useCart.getState().items;   // lire la liste actuelle
+    const updated = current.map((it) =>
+      it.id === id
+        ? { ...it, qty: Math.min((it.maxQty ?? 99), it.qty + 1) }
+        : it
     );
+    setItems(updated);
+  }
 
-  const dec = (id: string) =>
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, qty: Math.max(1, it.qty - 1) } : it
-      )
+  const dec = (id: string) => {
+    const current = useCart.getState().items;
+    const updated = current.map((it) =>
+      it.id === id ? { ...it, qty: Math.max(1, it.qty - 1) } : it
     );
+    setItems(updated);
+  }
 
-  const remove = (id: string) =>
-    setItems((prev) => prev.filter((it) => it.id !== id));
+  const remove = (id: string) =>{
+    const current = useCart.getState().items;
+    const updated = current.filter((it) => it.id !== id);
+    setItems(updated);
+  }
 
   const clear = () => {
+    clearCart();
     setItems([]);
     setAppliedCoupon(null);
     setCouponInput('');
@@ -389,7 +275,6 @@ export default function CartPage() {
                           onChange={(e) => {
                             const raw = e.target.value.replace(/[^\d]/g, '');
                             const v = Math.max(1, Math.min(parseInt(raw || '1', 10), it.maxQty ?? 999));
-                            setItems((prev) => prev.map((p) => (p.id === it.id ? { ...p, qty: v } : p)));
                           }}
                         />
 

@@ -13,95 +13,12 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import ZoomInMapOutlinedIcon from '@mui/icons-material/ZoomInMapOutlined';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-
-//
-// ---------- Types ----------
-export type ProductOption = {
-  name: string;            // ex: 'couleur' | 'taille' | 'mémoire' ...
-  values: string[];        // ex: ['Noir','Bleu'] / ['S','M','L']
-};
-
-export type Product = {
-  id: string;
-  title: string;
-  brand: string;
-  image: string;           // image principale (fallback)
-  images?: string[];       // galerie
-  price: number;
-  oldPrice?: number;
-  rating: number;          // 0..5
-  reviews: number;
-  inStock: boolean;
-  description: string;
-  tags: string[];
-  shipping?: string;
-  options?: ProductOption[]; // ⇐ propriétés/variantes
-};
-
-//
-// ---------- Demo data (remplace par ton fetch) ----------
-const DEMO_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    title: 'Casque Bluetooth Noir',
-    brand: 'Aurafy',
-    image: 'https://images.unsplash.com/photo-1679533662345-b321cf2d8792?q=80&w=1200&auto=format&fit=crop',
-    images: [
-      'https://images.unsplash.com/photo-1679533662345-b321cf2d8792?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1518444054145-6a761f5c82d8?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1200&auto=format&fit=crop',
-    ],
-    price: 59.9,
-    oldPrice: 89.9,
-    rating: 4.4,
-    reviews: 326,
-    inStock: true,
-    description: 'Casque sans fil, réduction de bruit passive, 30h d’autonomie.',
-    tags: ['Audio', 'Sans fil', 'Lifestyle'],
-    shipping: 'Livraison 24-48h',
-    options: [
-      { name: 'couleur', values: ['Noir', 'Bleu', 'Blanc'] },
-      { name: 'taille', values: ['S', 'M', 'L'] },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Montre Connectée Série S',
-    brand: 'Pulse',
-    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop',
-    images: [
-      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1516726817505-f5ed825624d8?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1200&auto=format&fit=crop',
-    ],
-    price: 129.0,
-    rating: 4.2,
-    reviews: 198,
-    inStock: true,
-    description: 'Suivi santé, GPS, étanche 5 ATM, 7 jours d’autonomie.',
-    tags: ['Wearable', 'Fitness'],
-    shipping: 'Livraison 48h',
-    options: [
-      { name: 'couleur', values: ['Noir', 'Argent'] },
-      { name: 'bracelet', values: ['Silicone', 'Tissu', 'Cuir'] },
-      { name: 'taille', values: ['S', 'M'] },
-    ],
-  },
-];
+import {CartItem} from '@/types/cart';
+import AddToCartButton from '@/components/addToCartButton/AddToCartButton'
+import {items} from '@/types/product';
 
 //
 // ---------- Utils ----------
-const LS_KEY = 'tsiki-cart';
-type CartItem = {
-  id: string;
-  title: string;
-  price: number;
-  image?: string;
-  qty: number;
-  maxQty?: number;
-  options?: Record<string, string>; // ⇐ on stocke les variantes choisies
-};
 
 function formatPrice(n: number, currency = 'EUR', locale = 'fr-FR') {
   try {
@@ -109,23 +26,6 @@ function formatPrice(n: number, currency = 'EUR', locale = 'fr-FR') {
   } catch {
     return `${n.toFixed(2)} ${currency}`;
   }
-}
-function loadCart(): CartItem[] {
-  if (typeof window === 'undefined') return [];
-  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]') as CartItem[]; } catch { return []; }
-}
-function saveCart(items: CartItem[]) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch {}
-}
-function addToCart(item: CartItem) {
-  const items = loadCart();
-  const i = items.findIndex((x) =>
-    x.id === item.id &&
-    JSON.stringify(x.options || {}) === JSON.stringify(item.options || {})
-  );
-  if (i >= 0) items[i].qty = Math.min((items[i].maxQty ?? 99), items[i].qty + item.qty);
-  else items.push(item);
-  saveCart(items);
 }
 
 //
@@ -244,7 +144,7 @@ export default function ProductPage() {
 
   // Remplace ici par ton fetch (server action / RSC / API)
   const product = React.useMemo(
-    () => DEMO_PRODUCTS.find((p) => p.id === params?.id) ?? DEMO_PRODUCTS[0],
+    () => items.find((p) => p.id === params?.id) ?? items[0],
     [params?.id]
   );
 
@@ -284,25 +184,7 @@ export default function ProductPage() {
   const hasDiscount = !!product.oldPrice && product.oldPrice > product.price;
   const percentOff = hasDiscount ? Math.round((1 - product.price / product.oldPrice!) * 100) : 0;
 
-  const handleAddToCart = () => {
-    if (!product.inStock) {
-      setSnack({ open: true, msg: 'Produit indisponible.', sev: 'error' });
-      return;
-    }
-    addToCart({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      image: mainSrc,
-      qty,
-      maxQty: 10,
-      options: selected,
-    });
-    setSnack({ open: true, msg: 'Ajouté au panier ✅', sev: 'success' });
-  };
-
   const handleBuyNow = () => {
-    handleAddToCart();
     router.push('/checkout');
   };
 
@@ -534,9 +416,15 @@ export default function ProductPage() {
               </Stack>
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ flexGrow: 1 }}>
-                <Button variant="contained" size="large" onClick={handleAddToCart} disabled={!product.inStock}>
+                {/* <Button variant="contained" size="large" onClick={handleAddToCart} disabled={!product.inStock}>
                   Ajouter au panier
-                </Button>
+                </Button> */}
+                  <Box onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}>
+                      <AddToCartButton product={product} typeButton="contained"/>
+                  </Box>
                 <Button variant="outlined" size="large" onClick={handleBuyNow} disabled={!product.inStock}>
                   Acheter maintenant
                 </Button>

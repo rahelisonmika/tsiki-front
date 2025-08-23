@@ -17,9 +17,10 @@ import TranslateIcon from '@mui/icons-material/Translate';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import { Category } from '@mui/icons-material';
-
-export type Category = { cat_code: string; cat_libelle: string };
+import { Category } from '@/types/category'; // Assurez-vous que ce type est défini dans un fichier approprié
+import { useCart } from '@/store/cart/cart';
+import { useUser } from '@/store/user/user';
+import { NavbarProps } from './Navbar.type'; // Importez le type NavbarProps
 
 const LANGS = [
   { code: 'fr', label: 'FR / USD' },
@@ -27,23 +28,19 @@ const LANGS = [
   { code: 'mg', label: 'MG / MGA' },
 ];
 
-export type NavbarProps = {
-  CATEGORIES: Category[];
-  urlToRedirect?: string;
-};
-
-export default function Navbar({CATEGORIES, urlToRedirect}:NavbarProps) {
+export default function Navbar({CATEGORIES, urlToRedirect, urlLogin, urlCart}:NavbarProps) {
   // Derive TOP_NAV depuis CATEGORIES (ex: 5 premières hors "Tous")
   const TOP_NAV: Category[] = CATEGORIES.filter((c:any) => c.cat_code !== 'all').slice(0, 5);
+  const cartCount = useCart((state) => state.items.length);
+  const user      = useUser((state) => state.user);
 
 
   const theme    = useTheme();
   const isMdUp   = useMediaQuery(theme.breakpoints.up('md'));
   const router   = useRouter();
-  const pathname = usePathname();
 
   const [lang, setLang] = React.useState('fr');
-  const [cartCount]     = React.useState(0);
+  //const [cartCount]     = React.useState(0);
   const [search, setSearch] = React.useState('');
   const [categoryCode, setCategoryCode] = React.useState<string>('all');
 
@@ -76,6 +73,13 @@ export default function Navbar({CATEGORIES, urlToRedirect}:NavbarProps) {
     //router.push(`/search?q=${encodeURIComponent(search)}&cat=${encodeURIComponent(categoryCode)}`);
     router.push("/"+urlToRedirect+"?mode="+categoryCode+"&search="+search);
   };
+
+  const handleDisplayCompte = () => {
+    if(user){
+      return "none";
+    }
+    return "";
+  }
 
   const handleClickMenuLang = (code:string) => {
     setLang(code)
@@ -228,12 +232,12 @@ export default function Navbar({CATEGORIES, urlToRedirect}:NavbarProps) {
               )}
 
               {/* Compte */}
-              <IconButton aria-label="compte" color="inherit" component={Link} href="/register">
+              <IconButton sx={{display:handleDisplayCompte}} aria-label="compte" color="inherit" component={Link} href={urlLogin || '/login'}>
                 <PersonOutlineIcon />
               </IconButton>
 
               {/* Panier */}
-              <IconButton aria-label="panier" color="inherit" component={Link} href="/cart">
+              <IconButton aria-label="panier" color="inherit" component={Link} href={urlCart || '/cart'}>
                 <Badge badgeContent={cartCount} color="secondary">
                   <ShoppingCartOutlinedIcon />
                 </Badge>

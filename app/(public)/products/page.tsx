@@ -2,120 +2,13 @@
 
 import * as React from 'react';
 import { Container, Stack, Typography, Button, TextField, Card, CardContent } from '@mui/material';
-import Products, { Product } from "@/components/Products";
+import Products from "@/components/products/Products";
+import {items} from '@/types/product';
 
-const items: Product[] = [
-  {
-    id: "1",
-    title: "Casque Bluetooth Noir",
-    brand: "Aurafy",
-    image: "https://images.unsplash.com/photo-1679533662345-b321cf2d8792?q=80&w=667&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 59.9,
-    oldPrice: 89.9,
-    rating: 4.4,
-    reviews: 326,
-    inStock: true,
-    description: "Casque sans fil, réduction de bruit passive, 30h d’autonomie.",
-    tags: ["Audio", "Sans fil", "Lifestyle"],
-    shipping: "Livraison 24-48h",
-  },
-  {
-    id: "2",
-    title: "Montre Connectée Série S",
-    brand: "Pulse",
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop",
-    price: 129.0,
-    rating: 4.2,
-    reviews: 198,
-    inStock: true,
-    description: "Suivi santé, GPS, étanche 5 ATM, 7 jours d’autonomie.",
-    tags: ["Wearable", "Fitness"],
-    shipping: "Livraison 48h",
-  },
-  {
-    id: "3",
-    title: "Appareil Photo Mirrorless",
-    brand: "Lumina",
-    image: "https://images.unsplash.com/photo-1606986601547-a4d886b671b2?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 699.0,
-    oldPrice: 799.0,
-    rating: 4.7,
-    reviews: 742,
-    inStock: true,
-    description: "Capteur APS-C 24MP, 4K30, écran orientable, Wi-Fi.",
-    tags: ["Photo", "4K"],
-    shipping: "Livraison gratuite",
-  },
-  {
-    id: "4",
-    title: "Chaussures Running Pro",
-    brand: "SwiftRun",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop",
-    price: 89.0,
-    rating: 4.1,
-    reviews: 140,
-    inStock: false,
-    description: "Amorti réactif, mesh respirant, semelle anti-dérapante.",
-    tags: ["Sport"],
-    shipping: "—",
-  },
-  {
-    id: "5",
-    title: "Sac à Dos Urbain 24L",
-    brand: "Carry",
-    image: "https://images.unsplash.com/photo-1528921581519-52b9d779df2b?q=80&w=988&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 49.0,
-    rating: 4.0,
-    reviews: 88,
-    inStock: true,
-    description: "Compartiment laptop 16”, anti-pluie, poches rapides.",
-    tags: ["Lifestyle", "Voyage"],
-    shipping: "Livraison 72h",
-  },
-  {
-    id: "6",
-    title: "Lampe de Bureau LED",
-    brand: "Glow",
-    image: "https://images.unsplash.com/photo-1675320458457-fe4576cbd0f8?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 24.9,
-    rating: 4.3,
-    reviews: 310,
-    inStock: true,
-    description: "Température réglable, USB-C, faible consommation.",
-    tags: ["Maison"],
-    shipping: "Livraison 48h",
-  },
-  {
-    id: "7",
-    title: "Clavier Mécanique 75%",
-    brand: "KeyLabs",
-    image: "https://images.unsplash.com/photo-1648392368628-6e984d89e2f3?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1200&auto=format&fit=crop",
-    price: 109.0,
-    rating: 4.6,
-    reviews: 512,
-    inStock: true,
-    description: "Switches tactiles, RGB, hot-swap, Bluetooth/USB.",
-    tags: ["Informatique", "Gaming", "Bureau"],
-    shipping: "Livraison 24-48h",
-  },
-  {
-    id: "8",
-    title: "Gourde Isotherme 1L",
-    brand: "TrailGo",
-    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1200&auto=format&fit=crop",
-    price: 19.9,
-    rating: 4.5,
-    reviews: 267,
-    inStock: true,
-    description: "Acier inoxydable, conserve 24h froid / 12h chaud.",
-    tags: ["Outdoor"],
-    shipping: "Livraison 72h",
-  },
-]
 export default function Page() {
   return (
     <Container>
-      <Products items={items} currency="EUR" locale="fr-FR" onAddToCart={(p) => console.log("ADD", p)} />
+      <Products items={items} currency="EUR" locale="fr-FR"/>
     </Container>
   );
 }

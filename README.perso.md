@@ -239,3 +239,405 @@ Les scripts par défaut sont déjà en place dans package.json.
 
 npm run dev
 # ouvre http://localhost:3000
+
+
+
+
+----------------------------------------------------------------
+1) C’est quoi MUI ?
+
+Une bibliothèque React de composants UI prêts à l’emploi (boutons, champs, modales, menus…).
+
+Un système de design complet (thème, couleurs, typos, espaces, breakpoints).
+
+Un système de style unifié via la prop sx (+ styled() si besoin).
+
+2) Installation (Next.js)
+npm i @mui/material @mui/icons-material @emotion/react @emotion/styled
+# facultatif mais recommandé
+npm i @fontsource/roboto
+
+Mise en place de base (App Router)
+
+// app/layout.tsx
+'use client';
+import * as React from 'react';
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#1976d2' },   // change ta couleur marque ici
+    secondary: { main: '#9A10F0' }, // exemple: ta couleur
+  },
+});
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="fr">
+      <body>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+
+CssBaseline applique des styles de “reset” cohérents.
+Si tu fais du SSR avancé, garde ton EmotionCacheProvider comme tu l’avais.
+
+3) Les fondamentaux à connaître
+a) Le système de style : la prop sx
+
+Tu peux styler n’importe quel composant via sx.
+
+Les valeurs responsive se font par breakpoint : { xs: ..., sm: ..., md: ... }.
+
+Les espacements utilisent l’échelle du thème (par défaut 8px) : p: 2 ⇒ 16px.
+
+<Box
+  sx={{
+    p: { xs: 2, md: 4 },          // padding responsive
+    bgcolor: 'background.paper',  // couleur issue du thème
+    borderRadius: 2,              // 2 * 8 = 16px
+  }}
+/>
+
+b) Le layout : Box, Stack, Grid, Container
+
+Box = div “améliorée” (layout rapide avec display, flex, grid, sx).
+
+Stack = flex vertical/horizontal + gestion d’espaces spacing.
+
+Grid = grille 12 colonnes responsive.
+
+Container = largeur max centrée.
+
+<Container maxWidth="lg">
+  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+    <Box sx={{ flex: 1, bgcolor: 'grey.100', p: 2 }}>Bloc A</Box>
+    <Box sx={{ flex: 1, bgcolor: 'grey.100', p: 2 }}>Bloc B</Box>
+  </Stack>
+</Container>
+
+
+c) Les couleurs & thèmes
+
+theme.palette ⇒ primary, secondary, error, warning, info, success, text, background, divider.
+
+Mode clair/sombre via palette.mode: 'light' | 'dark'.
+
+Appel dans sx: color: 'primary.main', bgcolor: 'background.default', etc.
+
+
+d) Les composants (quelques incontournables)
+
+AppBar / Toolbar : en-tête.
+
+Button : actions (variant="contained|outlined|text").
+
+TextField : formulaires (variant="outlined|filled|standard").
+
+Menu / MenuItem : menus.
+
+Dialog / Drawer : modales et tiroirs.
+
+Card : cartes contenu.
+
+List : listes, navigation.
+
+Tabs : onglets.
+
+Exemple rapide :
+
+<Card sx={{ maxWidth: 360 }}>
+  <Box sx={{ p: 2, bgcolor: 'grey.100' }}>Image ici</Box>
+  <Stack spacing={1} sx={{ p: 2 }}>
+    <Typography variant="h6">Titre</Typography>
+    <Typography color="text.secondary">Description courte…</Typography>
+    <Stack direction="row" spacing={1}>
+      <Button variant="contained">Action</Button>
+      <Button variant="outlined">Annuler</Button>
+    </Stack>
+  </Stack>
+</Card>
+
+e) Icônes
+
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+
+<IconButton color="inherit"><ShoppingCartOutlinedIcon /></IconButton>
+
+4) Responsive : breakpoints & valeurs
+
+Breakpoints par défaut : xs (0), sm (600), md (900), lg (1200), xl (1536).
+
+// taille du texte qui s’adapte
+<Typography sx={{ fontSize: { xs: 16, sm: 18, md: 20 } }}>
+  Texte responsive
+</Typography>
+
+5) Thème personnalisé (couleurs, typo, composants)
+
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#9A10F0' },   // ta couleur marque
+    background: {
+      default: '#fafafa',
+      paper: '#fff',
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, system-ui, Arial',
+    h1: { fontWeight: 700, letterSpacing: -0.5 },
+  },
+  components: {
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: { root: { borderRadius: 12 } },
+    },
+  },
+});
+
+6) Mode sombre (toggle simple)
+
+// app/theme/ColorMode.tsx
+'use client';
+import * as React from 'react';
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+
+export function ColorModeProvider({ children }: { children: React.ReactNode }) {
+  const [mode, setMode] = React.useState<'light'|'dark'>('light');
+  const theme = React.useMemo(() => createTheme({ palette: { mode } }), [mode]);
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <button onClick={() => setMode(m => (m === 'light' ? 'dark' : 'light'))}>
+        Toggle {mode}
+      </button>
+      {children}
+    </ThemeProvider>
+  );
+}
+
+7) Z-index & couches
+
+Ordre par défaut : mobileStepper(1000) < appBar(1100) < drawer(1200) < modal(1300) < snackbar(1400) < tooltip(1500).
+
+Tu peux le lire/étendre via theme.zIndex.
+Ex : mettre un panneau au-dessus de l’AppBar :
+
+<Box sx={{ position: 'fixed', zIndex: (t) => t.zIndex.appBar + 1 }} />
+
+8) Bonnes pratiques + pièges
+
+Dans Next.js App Router : mets use client uniquement sur les composants interactifs.
+
+sx > className pour tout ce qui touche au thème ; garde className si tu combines avec Tailwind/SCSS.
+
+Utilise Container maxWidth="lg" pour un contenu centré et lisible.
+
+Préfère Stack spacing plutôt que des marges manuelles, c’est plus propre.
+
+Pour les images Next, configure next.config.js pour les domaines externes.
+
+9) Petit exemple complet (header + contenu)
+
+import * as React from 'react';
+import { AppBar, Toolbar, Container, Typography, Box, Button, Stack } from '@mui/material';
+
+export default function Demo() {
+  return (
+    <>
+      <AppBar position="sticky" color="primary">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>Ma Boutique</Typography>
+          <Stack direction="row" spacing={1}>
+            <Button color="inherit">Produits</Button>
+            <Button color="inherit">Contact</Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
+          Bienvenue 👋
+        </Typography>
+        <Box sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          Commence à composer ton interface avec les composants MUI.
+        </Box>
+      </Container>
+    </>
+  );
+}
+
+Pré requis
+
+# Dans un projet Next.js (app router)
+npm i -D prisma
+npm i @prisma/client zod
+
+# OU, si tu choisis l’option B
+npm i pg zod
+
+1) Initialiser Prisma
+
+npx prisma init
+
+Ça crée prisma/schema.prisma et utilise DATABASE_URL.
+
+2) Définir le schéma
+
+prisma/schema.prisma :
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+3) Migrer la base & générer le client
+
+npx prisma migrate dev --name init
+
+4) Client Prisma singleton (évite les multiples connexions en dev)
+
+lib/prisma.ts
+
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log: ['error', 'warn'], // ajoute 'query' en debug si besoin
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+5) Routes API Next.js (App Router)
+
+Structure :
+
+app/
+└─ api/
+   └─ users/
+      ├─ route.ts    # GET/POST
+      └─ [id]/
+         └─ route.ts # GET/PATCH/DELETE
+
+Validation avec Zod :
+app/api/users/route.ts
+
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+
+const createUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2).optional(),
+});
+
+// GET /api/users → list
+export async function GET() {
+  const users = await prisma.user.findMany({ orderBy: { createdAt: 'desc' } });
+  return NextResponse.json(users);
+}
+
+// POST /api/users → create
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const data = createUserSchema.parse(body);
+
+    const user = await prisma.user.create({ data });
+    return NextResponse.json(user, { status: 201 });
+  } catch (err: any) {
+    if (err?.name === 'ZodError') {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
+    // gestion des erreurs doublon email
+    if (err?.code === 'P2002') {
+      return NextResponse.json({ error: 'Email déjà utilisé' }, { status: 409 });
+    }
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
+
+app/api/users/[id]/route.ts
+
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+
+const idSchema = z.string().min(1);
+const updateSchema = z.object({
+  name: z.string().min(2).optional(),
+});
+
+export async function GET(
+  _req: Request,
+  { params }: { params: { id: string } }
+) {
+  const id = idSchema.parse(params.id);
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  return NextResponse.json(user);
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = idSchema.parse(params.id);
+    const data = updateSchema.parse(await req.json());
+    const user = await prisma.user.update({ where: { id }, data });
+    return NextResponse.json(user);
+  } catch (err: any) {
+    if (err?.name === 'ZodError') {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
+    if (err?.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = idSchema.parse(params.id);
+    await prisma.user.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    if (err?.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
+
